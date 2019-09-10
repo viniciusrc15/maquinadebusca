@@ -5,6 +5,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Files;
@@ -50,18 +51,14 @@ public class ColetorService {
             for (String urlSimple : d.getUrls()) {
                 url = new URL(urlSimple);
                 Document doc = Jsoup.connect(url.toString()).get();
-                Elements links = doc.select("a[href]");
-                URLConnection url_connection = url.openConnection();
-                InputStream is = url_connection.getInputStream();
-                InputStreamReader reader = new InputStreamReader(is);
-                BufferedReader buffer = new BufferedReader(reader);
-                String linha;
-                while ((linha = buffer.readLine()) != null) {
-                    linha = Jsoup.parse(linha).text();
-                    d.setTexto(d.getTexto().concat(linha));
-                }
-                Time.sleep(10);
-                d.setVisao(removeTrash(linha).toLowerCase());
+                Elements links = doc.select ("a[href]");
+                
+                for (Element link : links)
+                    if ((! link.attr("abs:href").equals ("") && (link.attr("abs:href") != null)))
+                    urls.add (link.attr("abs:href"));
+                
+                // Time.sleep(10);
+                d.setVisao(removeTrash(doc.text()).toLowerCase());
             }
         } catch (Exception e) {
             System.out.println("Erro ao coletar a página.");
@@ -74,17 +71,17 @@ public class ColetorService {
     private List<String> verifyDuplicate(List<String> urls) {
         List<String> urlsNew = new ArrayList<String>();
         for (int i = 0; i < urls.size() - 1; i++) {
-            for (int j = 0; j < 10; j++) {
-                if (!urls.get(i).equals(urls.get(j)) && !urls.get(i).equals("http://www.robotstxt.org/orig.html")) {
-                   urlsNew.add(urls.get(i));
+            for (int j = 0; j < urls.size(); j++) {
+                try {
+                     if (!urls.get(i).equals(urls.get(j)) && verifyRobotsDisalow(urls.get(i))) {
+                      urlsNew.add(urls.get(i));
+                    }
+                } catch (Exception e) {
                 }
+               
             }
         }
         return urlsNew;
-    }
-
-    private List<String> inserir() {
-        return null;
     }
 
     private String removeTrash(String texto)  throws IOException{
@@ -93,11 +90,41 @@ public class ColetorService {
         String[] allWords = texto.toLowerCase().split(" ");
         for(String word : allWords) {
             if(!stopwords.contains(word)) {
-                builder.concat(word);
-                builder.concat(" ");
+                builder = builder.concat(word);
+                builder = builder.concat(" ");
             }
         }
         return builder; 
+    }
+
+    private boolean verifyRobotsDisalow(String url) throws MalformedURLException, IOException {
+        URL urlSeparated = new URL(url);
+        
+        String coletor = urlSeparated.getProtocol().concat("://");
+        coletor = coletor.concat(urlSeparated.getHost());
+        Document doc = Jsoup.connect(coletor.concat("/robots.txt").toString()).get();
+        String disallow = doc.text().replace("Disallow: ", "!@#Disallow:");
+        String allow = disallow.replace("Allow: ", "!@#Allow:");
+        String trata_espaco = allow.replace(" ", "");
+        String[] caminho_tratado = trata_espaco.split("!@#");
+        List<String> aux_url = new ArrayList<>();
+        List<String> urls = new ArrayList<>();
+        //Fim 
+
+        // Adiciona o array de string em um ArrayList
+        for (int i = 0; i <= (caminho_tratado.length - 1); i++) {
+            aux_url.add(caminho_tratado[i]);
+        }
+        //Fim
+
+        //Adiciona do ArraList aux_url para o ArrayList url somente os caminhos Disallow
+        for (int i = 0; i <= (aux_url.size() - 1); i++) {
+            if (aux_url.get(i).contains("Disallow")) {
+                urls.add(aux_url.get(i));
+            }
+        }
+            //Fim
+        return !urls.contains(url);
     }
 
 }
