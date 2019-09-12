@@ -52,7 +52,7 @@ public class ColetorService {
                     urls.add (link.attr("abs:href"));
                 
                 // Time.sleep(10);
-                d.setVisao(removeTrash(doc.text()).toLowerCase());
+                d.setVisao(removeTrash(doc.text()).toLowerCase().concat(d.getVisao() != null ? d.getVisao() : ""));
             }
         } catch (Exception e) {
             System.out.println("Erro ao coletar a página.");

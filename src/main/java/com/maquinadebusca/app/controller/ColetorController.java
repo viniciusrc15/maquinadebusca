@@ -28,8 +28,9 @@ public class ColetorController {
     private ColetorService coletorSevice;
     
     @GetMapping(produces = MediaType.TEXT_PLAIN_VALUE)
-    public ResponseEntity<Documento> starter(){
-       return ResponseEntity.ok(coletorSevice.getDataColletor());
+    public ResponseEntity<String> starter(){
+       Documento dataColletor = coletorSevice.getDataColletor();
+       return ResponseEntity.ok(dataColletor.getVisao());
     }
     
     
