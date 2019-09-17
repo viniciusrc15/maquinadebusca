@@ -35,24 +35,26 @@ public class ColetorService {
         try {
             List<String> urls = new LinkedList<String>();
             urls.addAll(Arrays.asList("http://journals.ecs.soton.ac.uk/java/tutorial/networking/urls/readingWriting.html",
-                    "https://www.baeldung.com/java-string-remove-stopwords", 
-                    "https://www.youtube.com/watch?v=MGWJbaYdy-Y&list=PLZTjHbp2Y7812axMiHkbXTYt9IDCSYgQz", 
+                    "https://www.baeldung.com/java-string-remove-stopwords",
+                    "https://www.youtube.com/watch?v=MGWJbaYdy-Y&list=PLZTjHbp2Y7812axMiHkbXTYt9IDCSYgQz",
                     "https://www.guj.com.br/t/verficar-duplicata-num-array-unidimensional/35422/9",
                     "http://journals.ecs.soton.ac.uk/java/tutorial/networking/urls/readingWriting.html"
-                    ));
+            ));
 
             d.setUrls(verifyDuplicate(urls));
 
             for (String urlSimple : d.getUrls()) {
                 url = new URL(urlSimple);
                 Document doc = Jsoup.connect(url.toString()).get();
-                Elements links = doc.select ("a[href]");
-                
-                for (Element link : links)
-                    if ((! link.attr("abs:href").equals ("") && (link.attr("abs:href") != null)))
-                    urls.add (link.attr("abs:href"));
-                
-                setTimeout(() -> System.out.println("timeout collect"), 10000); 
+                Elements links = doc.select("a[href]");
+
+                for (Element link : links) {
+                    if ((!link.attr("abs:href").equals("") && (link.attr("abs:href") != null))) {
+                        urls.add(link.attr("abs:href"));
+                    }
+                }
+
+                setTimeout(() -> System.out.println("timeout collect"), 10000);
                 d.setVisao(removeTrash(doc.text()).toLowerCase().concat(d.getVisao() != null ? d.getVisao() : ""));
             }
         } catch (Exception e) {
@@ -68,33 +70,33 @@ public class ColetorService {
         for (int i = 0; i < urls.size() - 1; i++) {
             for (int j = 0; j < urls.size(); j++) {
                 try {
-                     if (!urls.get(i).equals(urls.get(j)) && verifyRobotsDisalow(urls.get(i))) {
-                      urlsNew.add(urls.get(i));
+                    if (!urls.get(i).equals(urls.get(j)) && verifyRobotsDisalow(urls.get(i))) {
+                        urlsNew.add(urls.get(i));
                     }
                 } catch (Exception e) {
                 }
-               
+
             }
         }
         return urlsNew;
     }
 
-    private String removeTrash(String texto)  throws IOException{
+    private String removeTrash(String texto) throws IOException {
         List<String> stopwords = Files.readAllLines(Paths.get("stopwords.txt"));
         String builder = new String();
         String[] allWords = texto.toLowerCase().split(" ");
-        for(String word : allWords) {
-            if(!stopwords.contains(word)) {
+        for (String word : allWords) {
+            if (!stopwords.contains(word)) {
                 builder = builder.concat(word);
                 builder = builder.concat(" ");
             }
         }
-        return builder; 
+        return builder;
     }
 
     private boolean verifyRobotsDisalow(String url) throws MalformedURLException, IOException {
         URL urlSeparated = new URL(url);
-        
+
         String coletor = urlSeparated.getProtocol().concat("://");
         coletor = coletor.concat(urlSeparated.getHost());
         Document doc = Jsoup.connect(coletor.concat("/robots.txt").toString()).get();
@@ -118,19 +120,18 @@ public class ColetorService {
                 urls.add(aux_url.get(i));
             }
         }
-            //Fim
+        //Fim
         return !urls.contains(url);
     }
 
-    public static void setTimeout(Runnable runnable, int delay){
-    new Thread(() -> {
-        try {
-            Thread.sleep(delay);
-            runnable.run();
-        }
-        catch (Exception e){
-            System.err.println(e);
-        }
-    }).start();
-}
+    public static void setTimeout(Runnable runnable, int delay) {
+        new Thread(() -> {
+            try {
+                Thread.sleep(delay);
+                runnable.run();
+            } catch (Exception e) {
+                System.err.println(e);
+            }
+        }).start();
+    }
 }
