@@ -12,7 +12,7 @@ import java.util.List;
  *
  * @author vinicius
  */
-public class Documento {
+public class DocumentoModel {
     private URL url;
     private String texto;
     private String visao;
@@ -26,13 +26,13 @@ public class Documento {
         this.urls = urls;
     }
 
-    public Documento(URL url, String texto, String visao) {
+    public DocumentoModel(URL url, String texto, String visao) {
         this.url = url;
         this.texto = texto;
         this.visao = visao;
     }
     
-    public Documento() {}
+    public DocumentoModel() {}
 
     public URL getUrl() {
         return url;

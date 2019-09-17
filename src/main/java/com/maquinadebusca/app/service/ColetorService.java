@@ -1,6 +1,6 @@
 package com.maquinadebusca.app.service;
 
-import com.maquinadebusca.app.model.Documento;
+import com.maquinadebusca.app.model.DocumentoModel;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import org.apache.tomcat.jni.Time;
 import org.springframework.stereotype.Service;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -28,9 +29,9 @@ import org.jsoup.select.Elements;
 @Service
 public class ColetorService {
 
-    public Documento getDataColletor() {
+    public DocumentoModel getDataColletor() {
         URL url;
-        Documento d = new Documento();
+        DocumentoModel d = new DocumentoModel();
         try {
             List<String> urls = new LinkedList<String>();
             urls.addAll(Arrays.asList("http://journals.ecs.soton.ac.uk/java/tutorial/networking/urls/readingWriting.html",
@@ -51,7 +52,7 @@ public class ColetorService {
                     if ((! link.attr("abs:href").equals ("") && (link.attr("abs:href") != null)))
                     urls.add (link.attr("abs:href"));
                 
-                // Time.sleep(10);
+                setTimeout(() -> System.out.println("timeout collect"), 10000); 
                 d.setVisao(removeTrash(doc.text()).toLowerCase().concat(d.getVisao() != null ? d.getVisao() : ""));
             }
         } catch (Exception e) {
@@ -121,4 +122,15 @@ public class ColetorService {
         return !urls.contains(url);
     }
 
+    public static void setTimeout(Runnable runnable, int delay){
+    new Thread(() -> {
+        try {
+            Thread.sleep(delay);
+            runnable.run();
+        }
+        catch (Exception e){
+            System.err.println(e);
+        }
+    }).start();
+}
 }
