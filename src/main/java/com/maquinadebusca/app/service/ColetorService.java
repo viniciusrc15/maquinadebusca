@@ -54,7 +54,7 @@ public class ColetorService {
                     }
                 }
 
-                setTimeout(() -> System.out.println("timeout collect"), 10000);
+                setTimeout(() -> System.out.println("timeout collect"), 5000);
                 d.setVisao(removeTrash(doc.text()).toLowerCase().concat(d.getVisao() != null ? d.getVisao() : ""));
             }
         } catch (Exception e) {
@@ -86,10 +86,12 @@ public class ColetorService {
         String builder = new String();
         String[] allWords = texto.toLowerCase().split(" ");
         for (String word : allWords) {
-            if (!stopwords.contains(word)) {
-                builder = builder.concat(word);
-                builder = builder.concat(" ");
-            }
+            //for (String stopword : stopwords) {
+              if (!stopwords.toString().contains(word)) {
+                    builder = builder.concat(word);
+                    builder = builder.concat(" ");
+                }
+            //}
         }
         return builder;
     }
