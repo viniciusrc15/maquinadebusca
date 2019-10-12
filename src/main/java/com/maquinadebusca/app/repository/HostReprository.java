@@ -5,25 +5,18 @@
  */
 package com.maquinadebusca.app.repository;
 
-import com.maquinadebusca.app.entity.Documento;
 import com.maquinadebusca.app.entity.Host;
-import com.maquinadebusca.app.entity.Link;
-import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 
 /**
  *
  * @author vinicius
  */
-@Repository
-public interface LinkRepository extends JpaRepository<Link, Long>{
-    @Override
-    List<Link> findAll();
-    
-    Link findByUrl(String url);
+public interface HostReprository extends JpaRepository<Host, Long>{
 
-    List<Link> findByHost(Host findById);
+    // Optional<Host> findByHostName(String host);
+    
+    Host findByHostName(String host);
     
 }

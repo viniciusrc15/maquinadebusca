@@ -17,7 +17,10 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.Lob;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.validation.constraints.NotBlank;
 
@@ -33,23 +36,30 @@ import javax.validation.constraints.NotBlank;
 public class Documento implements Serializable {
 
     static final long serialVersionUID = 1L;
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+
     @NotBlank
     private String url;
+
     @Lob
     @NotBlank
     private String texto;
+
     @Lob
     @NotBlank
     private String visao;
-    @OneToMany(
-            mappedBy = "documento", // Nome do atributo na classe Link.
+
+    @ManyToMany(
             cascade = CascadeType.ALL,
-            fetch = FetchType.LAZY,
-            orphanRemoval = true
+            fetch = FetchType.LAZY
     )
+    @JoinTable(
+            name = "documento_link",
+            joinColumns = @JoinColumn(name = "documento_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "link_id", referencedColumnName = "id"))
     private Set<Link> links;
 
     public Documento() {
@@ -104,12 +114,10 @@ public class Documento implements Serializable {
     }
 
     public void addLink(Link link) {
-        link.setDocumento(this);
         this.links.add(link);
     }
 
     public void removeLink(Link link) {
-        link.setDocumento(null);
         links.remove(link);
     }
 

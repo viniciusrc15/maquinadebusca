@@ -6,8 +6,10 @@
 package com.maquinadebusca.app.model;
 
 import com.maquinadebusca.app.entity.Documento;
+import com.maquinadebusca.app.entity.Host;
 import com.maquinadebusca.app.entity.Link;
 import com.maquinadebusca.app.repository.DocumentoRepository;
+import com.maquinadebusca.app.repository.HostReprository;
 import com.maquinadebusca.app.repository.LinkRepository;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -16,14 +18,18 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 /**
@@ -38,6 +44,9 @@ public class ColetorModel {
 
     @Autowired
     private LinkRepository linkRepository;
+    
+    @Autowired
+    private HostReprository hostReprository;
 
     public List<Documento> executar() {
         List<Documento> documentos = new LinkedList();
@@ -57,7 +66,7 @@ public class ColetorModel {
         return documentos;
     }
 
-    public Documento coletar(String urlDocumento) {
+    public Documento coletar(String urlDocumento) throws MalformedURLException {
         Documento documento = new Documento();
         try {
             Link link = new Link();
@@ -68,15 +77,10 @@ public class ColetorModel {
             documento.setUrl(urlDocumento);
             documento.setTexto(d.html());
             documento.setVisao(removeTrash(d.text()).toLowerCase().concat(documento.getVisao() != null ? documento.getVisao() : ""));
-//            for (Element url : urls) {
-//                String u = url.attr("abs:href");
-//                if ((!u.equals("")) && (u != null)) {
-//                    System.out.println(u);
-//                }
-//            }
             int i = 0;
             for (Element url : urls) {
                 i++;
+                
                 String u = url.attr("abs:href");
                 if ((!u.equals("")) && (u != null)) {
                     link = new Link();
@@ -92,6 +96,8 @@ public class ColetorModel {
             e.printStackTrace();
         }
         documento = documentRepository.save(documento);
+        saveLinks(documento);
+        
         return documento;
     }
 
@@ -190,9 +196,82 @@ public class ColetorModel {
         }
         return resposta;
     }
+    
+    public HostModel getHost(Long id) {
+        Optional<Host> host = hostReprository.findById(id);
+        if(host.isPresent()) {
+            List<Link> findByHost = linkRepository.findByHost(host.get());
+            return new HostModel(host.get().getId(), host.get().getHostName(), host.get().getUltimaColeta(), Long.valueOf(findByHost.size()));
+        }
+        return null;
+    }
+    
+    
 
     public Optional<Link> getLink(long id) {
         Optional<Link> link = linkRepository.findById(id);
         return link;
+    }
+
+    private void saveLinks(Documento documento) throws MalformedURLException {
+        for(Link link1 : documento.getLinks()) {
+            URL url = new URL(link1.getUrl());
+//            hostReprository.findByHostName(url.getHost()).isPresent((Host h) -> {
+//                h.
+//            });
+            Host host = hostReprository.findByHostName(url.getHost());
+            if(host == null) {
+                host = hostReprository.save(new Host(url.getHost(), null));
+            }
+            Link findByUrl = linkRepository.findByUrl(link1.getUrl());
+            if(findByUrl == null) {
+                Link link = new Link();
+                link.setHost(host);
+                Set<Documento> documentos = new HashSet<>();
+                documentos.add(documento);
+                link.setDocumentos(documentos);
+                link.setUrl(link1.getUrl());
+                link.setUltimaColeta(LocalDateTime.now());
+                linkRepository.save(link);
+            } else if(findByUrl.getUltimaColeta().isBefore(LocalDateTime.now().minusMinutes(1))){
+                findByUrl.setUltimaColeta(LocalDateTime.now());
+                Set<Documento> documentos = findByUrl.getDocumentos();
+                documentos.add(documento);
+                findByUrl.setDocumentos(documentos);
+                findByUrl.setHost(host);
+                host.setUltimaColeta(LocalDateTime.now());
+                hostReprository.save(host);
+                linkRepository.save(findByUrl);
+            }
+        }
+    }
+
+    public List<HostModel> getAlltHost() {
+        List<Host> hosts = hostReprository.findAll();
+        List<HostModel> hostModels = new ArrayList<>();
+        for(Host host : hosts) {
+            List<Link> findByHost = linkRepository.findByHost(host);
+            hostModels.add(new HostModel(host.getId(), findByHost));
+        }
+        return hostModels;
+    }
+    
+     public List<HostModel> getAlltHostAll() {
+        List<Host> hosts = hostReprository.findAll();
+        List<HostModel> hostModels = new ArrayList<>();
+        for(Host host : hosts) {
+            List<Link> findByHost = linkRepository.findByHost(host);
+            hostModels.add(new HostModel(host.getId(), host.getHostName(), host.getUltimaColeta(), Long.valueOf(findByHost.size()), findByHost));
+        }
+        return hostModels;
+    }
+
+    public HostModel getHostLinks(long id) {
+        Optional<Host> host = hostReprository.findById(id);
+        if(host.isPresent()) {
+            List<Link> findByHost = linkRepository.findByHost(host.get());
+            return new HostModel(host.get().getId(), findByHost);
+        }
+        return null;
     }
 }

@@ -9,7 +9,10 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import javax.persistence.Basic;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -17,7 +20,9 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.validation.constraints.NotBlank;
 
 /**
@@ -32,24 +37,44 @@ import javax.validation.constraints.NotBlank;
 public class Link implements Serializable {
 
     static final long serialVersionUID = 1L;
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+
     @NotBlank
     private String url;
+
     @Basic
     private LocalDateTime ultimaColeta;
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "documento_id")
-    private Documento documento;
+    
+    @OneToMany
+    private Host host;
+
+    public Host getHost() {
+        return host;
+    }
+
+    public void setHost(Host host) {
+        this.host = host;
+    }
+
+    
+
+    @ManyToMany(
+            mappedBy = "links", //Nome do atributo na classe Documento.
+            fetch = FetchType.LAZY
+    )
+    private Set<Documento> documentos;
 
     public Link() {
+        documentos = new HashSet();
     }
 
     public Link(String url, Documento documento) {
         this.url = url;
         this.ultimaColeta = null;
-        this.documento = documento;
+        this.documentos.add(documento);
     }
 
     public Long getId() {
@@ -76,12 +101,20 @@ public class Link implements Serializable {
         this.ultimaColeta = ultimaColeta;
     }
 
-    public Documento getDocumento() {
-        return documento;
+    public Set<Documento> getDocumentos() {
+        return documentos;
     }
 
-    public void setDocumento(Documento documento) {
-        this.documento = documento;
+    public void setDocumentos(Set<Documento> documentos) {
+        this.documentos = documentos;
+    }
+
+    public void addDocumento(Documento documento) {
+        this.documentos.add(documento);
+    }
+
+    public void removeDocumento(Documento documento) {
+        this.documentos.remove(documento);
     }
 
     @Override
