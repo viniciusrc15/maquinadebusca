@@ -53,7 +53,7 @@ public class Link implements Serializable {
     @JsonDeserialize (using = LocalDateTimeDeserializer.class)
     private LocalDateTime ultimaColeta;
     
-    @OneToMany
+    @ManyToOne
     private Host host;
 
     public Host getHost() {
