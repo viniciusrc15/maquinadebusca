@@ -5,13 +5,11 @@
  */
 package com.maquinadebusca.app.repository;
 
-import com.maquinadebusca.app.entity.Documento;
 import com.maquinadebusca.app.entity.Host;
 import com.maquinadebusca.app.entity.Link;
 import java.awt.print.Pageable;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import javax.transaction.Transactional;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;

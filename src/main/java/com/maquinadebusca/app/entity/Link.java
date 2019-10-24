@@ -12,7 +12,6 @@ import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import javax.persistence.Basic;
@@ -22,10 +21,8 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.validation.constraints.NotBlank;
 
 /**
@@ -50,11 +47,17 @@ public class Link implements Serializable {
     private String url;
 
     @Basic
-    @JsonDeserialize (using = LocalDateTimeDeserializer.class)
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     private LocalDateTime ultimaColeta;
-    
+
     @ManyToOne
     private Host host;
+
+    @ManyToMany(
+            mappedBy = "links", //Nome do atributo na classe Documento.
+            fetch = FetchType.LAZY
+    )
+    private Set<Documento> documentos;
 
     public Host getHost() {
         return host;
@@ -63,14 +66,6 @@ public class Link implements Serializable {
     public void setHost(Host host) {
         this.host = host;
     }
-
-    
-
-    @ManyToMany(
-            mappedBy = "links", //Nome do atributo na classe Documento.
-            fetch = FetchType.LAZY
-    )
-    private Set<Documento> documentos;
 
     public Link() {
         documentos = new HashSet();
