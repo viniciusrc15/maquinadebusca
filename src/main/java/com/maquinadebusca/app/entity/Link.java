@@ -7,6 +7,8 @@ package com.maquinadebusca.app.entity;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -14,6 +16,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import javax.persistence.Basic;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -43,9 +46,11 @@ public class Link implements Serializable {
     private Long id;
 
     @NotBlank
+    @Column(unique = true)
     private String url;
 
     @Basic
+    @JsonDeserialize (using = LocalDateTimeDeserializer.class)
     private LocalDateTime ultimaColeta;
     
     @OneToMany

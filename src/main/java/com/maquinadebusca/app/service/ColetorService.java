@@ -1,27 +1,42 @@
-package com.maquinadebusca.app.service;
-
-import com.maquinadebusca.app.model.DocumentoModel;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import org.apache.tomcat.jni.Time;
-import org.springframework.stereotype.Service;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+package com.maquinadebusca.app.service;
+
+import com.maquinadebusca.app.entity.Documento;
+import com.maquinadebusca.app.entity.Host;
+import com.maquinadebusca.app.entity.Link;
+import com.maquinadebusca.app.model.HostModel;
+import com.maquinadebusca.app.repository.DocumentoRepository;
+import com.maquinadebusca.app.repository.HostReprository;
+import com.maquinadebusca.app.repository.LinkRepository;
+import java.awt.print.Pageable;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+
 /**
  *
  * @author vinicius
@@ -29,40 +44,80 @@ import org.jsoup.select.Elements;
 @Service
 public class ColetorService {
 
-    public DocumentoModel getDataColletor() {
-        URL url;
-        DocumentoModel d = new DocumentoModel();
+    @Autowired
+    private DocumentoRepository documentRepository;
+
+    @Autowired
+    private LinkRepository linkRepository;
+
+    @Autowired
+    private HostReprository hostReprository;
+
+    public List<Documento> executar(List<String> links) {
+        List<Documento> documentos = new LinkedList();
+        List<String> sementes = new ArrayList<>(links);
         try {
-            List<String> urls = new LinkedList<String>();
-            urls.addAll(Arrays.asList("http://journals.ecs.soton.ac.uk/java/tutorial/networking/urls/readingWriting.html",
-                    "https://www.baeldung.com/java-string-remove-stopwords",
-                    "https://www.youtube.com/watch?v=MGWJbaYdy-Y&list=PLZTjHbp2Y7812axMiHkbXTYt9IDCSYgQz",
-                    "https://www.guj.com.br/t/verficar-duplicata-num-array-unidimensional/35422/9",
-                    "http://journals.ecs.soton.ac.uk/java/tutorial/networking/urls/readingWriting.html"
-            ));
+//            sementes.add("https://www.youtube.com/");
+//            sementes.add("https://www.facebook.com/");
+//            sementes.add("https://www.twitter.com/");
 
-            d.setUrls(verifyDuplicate(urls));
-
-            for (String urlSimple : d.getUrls()) {
-                url = new URL(urlSimple);
-                Document doc = Jsoup.connect(url.toString()).get();
-                Elements links = doc.select("a[href]");
-
-                for (Element link : links) {
-                    if ((!link.attr("abs:href").equals("") && (link.attr("abs:href") != null))) {
-                        urls.add(link.attr("abs:href"));
-                    }
-                }
-
-                setTimeout(() -> System.out.println("timeout collect"), 5000);
-                d.setVisao(removeTrash(doc.text()).toLowerCase().concat(d.getVisao() != null ? d.getVisao() : ""));
+            for (String url : verifyDuplicate(sementes)) {
+                documentos.add(this.coletar(url));
             }
+        } catch (Exception e) {
+            System.out.println("Erro ao executar o serviço de coleta!");
+            e.printStackTrace();
+        }
+        return documentos;
+    }
+
+    public Documento coletar(String urlDocumento) throws MalformedURLException {
+        Documento documento = new Documento();
+        try {
+            Link link = new Link();
+            link.setUrl(urlDocumento);
+            link.setUltimaColeta(LocalDateTime.now());
+            Document d = Jsoup.connect(urlDocumento).get();
+            Elements urls = d.select("a[href]");
+            documento.setUrl(urlDocumento);
+            documento.setTexto(d.html());
+            documento.setVisao(removeTrash(d.text()).toLowerCase().concat(documento.getVisao() != null ? documento.getVisao() : ""));
+            int i = 0;
+            for (Element url : urls) {
+                i++;
+
+                String u = url.attr("abs:href");
+                if ((!u.equals("")) && (u != null)) {
+                    link = new Link();
+                    link.setUrl(u);
+                    link.setUltimaColeta(null);
+                    documento.addLink(link);
+                }
+            }
+            System.out.println("Número de links coletados: " + i);
+            System.out.println("Tamanho da lista links: " + documento.getLinks().size());
         } catch (Exception e) {
             System.out.println("Erro ao coletar a página.");
             e.printStackTrace();
         }
-        return d;
+        documento = documentRepository.save(documento);
+        saveLinks(documento);
 
+        return documento;
+    }
+
+    public List<Documento> getDocumentos() {
+        List<Documento> documentos = documentRepository.findAll();
+        List<Documento> resposta = new ArrayList<>();
+        for (Documento documento : documentos) {
+            resposta.add(documento);
+        }
+        return resposta;
+    }
+
+    public Documento getDocumento(long id) {
+        Documento documento = documentRepository.findById(id);
+        return documento;
     }
 
     private List<String> verifyDuplicate(List<String> urls) {
@@ -83,14 +138,15 @@ public class ColetorService {
 
     private String removeTrash(String texto) throws IOException {
         List<String> stopwords = Files.readAllLines(Paths.get("stopwords.txt"));
+
         String builder = new String();
         String[] allWords = texto.toLowerCase().split(" ");
         for (String word : allWords) {
             //for (String stopword : stopwords) {
-              if (!stopwords.toString().contains(word)) {
-                    builder = builder.concat(word);
-                    builder = builder.concat(" ");
-                }
+            if (!stopwords.toString().contains(word)) {
+                builder = builder.concat(word);
+                builder = builder.concat(" ");
+            }
             //}
         }
         return builder;
@@ -135,5 +191,142 @@ public class ColetorService {
                 System.err.println(e);
             }
         }).start();
+    }
+
+    public List<Link> getLink() {
+        Iterable<Link> links = linkRepository.findAll();
+        List<Link> resposta = new LinkedList();
+        for (Link link : links) {
+            resposta.add(link);
+        }
+        return resposta;
+    }
+
+    public HostModel getHost(Long id) {
+        Optional<Host> host = hostReprository.findById(id);
+        if (host.isPresent()) {
+            List<Link> findByHost = linkRepository.findByHost(host.get());
+            return new HostModel(host.get().getId(), host.get().getHostName(), host.get().getUltimaColeta(), Long.valueOf(findByHost.size()));
+        }
+        return null;
+    }
+
+    public Optional<Link> getLink(long id) {
+        Optional<Link> link = linkRepository.findById(id);
+        return link;
+    }
+
+    private void saveLinks(Documento documento) throws MalformedURLException {
+        for (Link link1 : documento.getLinks()) {
+            URL url = new URL(link1.getUrl());
+//            hostReprository.findByHostName(url.getHost()).isPresent((Host h) -> {
+//                h.
+//            });
+            Host host = hostReprository.findByHostName(url.getHost());
+            if (host == null) {
+                host = hostReprository.save(new Host(url.getHost(), null));
+            }
+            Link findByUrl = linkRepository.findByUrl(link1.getUrl());
+            if (findByUrl == null) {
+                Link link = new Link();
+                link.setHost(host);
+                Set<Documento> documentos = new HashSet<>();
+                documentos.add(documento);
+                link.setDocumentos(documentos);
+                link.setUrl(link1.getUrl());
+                link.setUltimaColeta(LocalDateTime.now());
+                linkRepository.save(link);
+            } else if (findByUrl.getUltimaColeta().isBefore(LocalDateTime.now().minusMinutes(1))) {
+                findByUrl.setUltimaColeta(LocalDateTime.now());
+                Set<Documento> documentos = findByUrl.getDocumentos();
+                documentos.add(documento);
+                findByUrl.setDocumentos(documentos);
+                findByUrl.setHost(host);
+                host.setUltimaColeta(LocalDateTime.now());
+                hostReprository.save(host);
+                linkRepository.save(findByUrl);
+            }
+        }
+    }
+
+    public List<HostModel> getAlltHost() {
+        List<Host> hosts = hostReprository.findAll();
+        List<HostModel> hostModels = new ArrayList<>();
+        for (Host host : hosts) {
+            List<Link> findByHost = linkRepository.findByHost(host);
+            hostModels.add(new HostModel(host.getId(), findByHost));
+        }
+        return hostModels;
+    }
+
+    public List<HostModel> getAlltHostAll() {
+        List<Host> hosts = hostReprository.findAll();
+        List<HostModel> hostModels = new ArrayList<>();
+        for (Host host : hosts) {
+            List<Link> findByHost = linkRepository.findByHost(host);
+            hostModels.add(new HostModel(host.getId(), host.getHostName(), host.getUltimaColeta(), Long.valueOf(findByHost.size()), findByHost));
+        }
+        return hostModels;
+    }
+
+    public HostModel getHostLinks(long id) {
+        Optional<Host> host = hostReprository.findById(id);
+        if (host.isPresent()) {
+            List<Link> findByHost = linkRepository.findByHost(host.get());
+            return new HostModel(host.get().getId(), findByHost);
+        }
+        return null;
+    }
+
+    public List<Link> salvarLink(List<Link> links) {
+        return linkRepository.saveAll(links);
+    }
+
+    public Link atualizarLink(Link link) {
+        return linkRepository.save(link);
+    }
+
+    public List<Link> encontrarLinkUrl(String url) {
+        return linkRepository.findByUrlIgnoreCaseContaining(url);
+    }
+
+    public List<Link> listarEmOrdemAlfabetica() {
+        return linkRepository.getInLexicalOrder();
+    }
+
+    public String buscarPagina(Integer size, Integer page, String url) {
+        Slice<Link> pagina = null;
+        Pageable pageable = (Pageable) PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, url));
+        while (true) {
+            pagina = linkRepository.getPage(pageable);
+            int numeroDaPagina = pagina.getNumber();
+            int numeroDeElementosNaPagina = pagina.getNumberOfElements();
+            int tamanhoDaPagina = pagina.getSize();
+            System.out.println("\n\nPágina: " + numeroDaPagina + " Número de Elementos: "
+                    + numeroDeElementosNaPagina + " Tamaho da Página: " + tamanhoDaPagina);
+            List<Link> links = pagina.getContent();
+            links.forEach(System.out::println);
+            if (!pagina.hasNext()) {
+                break;
+            }
+            pageable = (Pageable) pagina.nextPageable();
+        }
+        return "{\"resposta\": \"Ok\"}";
+    }
+
+    public List<Link> pesquisarLinkPorIntervaloDeIdentificacao(Long id1, Long id2, String host) {
+        return linkRepository.findLinkByIdRange(id1, id2, host);
+    }
+
+    public Long contarLinkPorIntervaloDeIdentificacao(Long id1, Long id2) {
+        return linkRepository.countLinkByIdRange(id1, id2);
+    }
+
+    public Link contarLinkPorIntervaloDeData(LocalDateTime dateStart, LocalDateTime dateEnd) {
+        return linkRepository.contarLinkPorIntervaloDeData(dateStart, dateEnd);
+    }
+
+    public int atualizarDataUltimaColeta(String host, LocalDateTime dataUltimaColeta) {
+        return linkRepository.updateLastCrawlingDate(dataUltimaColeta, host);
     }
 }
