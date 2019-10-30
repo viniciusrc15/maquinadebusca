@@ -3,24 +3,23 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.maquinadebusca.app.model;
+package com.maquinadebusca.app.model.enums;
 
-import java.net.URL;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  *
  * @author vinicius
  */
 @AllArgsConstructor
-@NoArgsConstructor
-@Data
-public class DocumentoModel {
-    private URL url;
-    private String texto;
-    private String visao;
-    private List<String> urls; 
+@Getter
+public enum RolesEnum {
+    ADMIN("ROLE_ADMIN"),
+    USER("ROLE_USER");
+
+    private String label;
+
 }

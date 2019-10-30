@@ -8,19 +8,16 @@ package com.maquinadebusca.app.model;
 import com.maquinadebusca.app.entity.Link;
 import java.time.LocalDateTime;
 import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
 /**
  *
  * @author vinicius
  */
+@Data
 public class HostModel {
 
-    public HostModel(Long id, String hostName, LocalDateTime ultimaColeta, Long qtdLinks) {
-        this.id = id;
-        this.hostName = hostName;
-        this.ultimaColeta = ultimaColeta;
-        this.qtdLinks = qtdLinks;
-    }
     private Long id;
     private String hostName;   
      private LocalDateTime ultimaColeta;
@@ -38,5 +35,12 @@ public class HostModel {
         this.ultimaColeta = ultimaColeta;
         this.qtdLinks = qtdLinks;
         this.links = links;
+    }
+    
+    public HostModel(Long id, String hostName, LocalDateTime ultimaColeta, Long qtdLinks) {
+        this.id = id;
+        this.hostName = hostName;
+        this.ultimaColeta = ultimaColeta;
+        this.qtdLinks = qtdLinks;
     }
 }

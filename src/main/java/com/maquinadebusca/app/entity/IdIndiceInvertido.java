@@ -3,8 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.maquinadebusca.app.model;
+package com.maquinadebusca.app.entity;
 
+import javax.persistence.Embeddable;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -12,11 +13,11 @@ import lombok.Data;
  *
  * @author vinicius
  */
-@AllArgsConstructor
+@Embeddable
 @Data
-public class Mensagem {
+@AllArgsConstructor
+public class IdIndiceInvertido {
 
-    private String tipo;
-    private String texto;
-
+    private Long idTermo;
+    private Long idDocumento;
 }

@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import java.io.Serializable;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import javax.persistence.CascadeType;
@@ -21,20 +22,25 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.Lob;
 import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
 import javax.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  *
  * @author vinicius
  */
 @Entity
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
 @JsonIdentityInfo(
         generator = ObjectIdGenerators.PropertyGenerator.class,
         property = "id"
 )
-public class Documento implements Serializable {
-
-    static final long serialVersionUID = 1L;
+public class Documento {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -51,68 +57,24 @@ public class Documento implements Serializable {
     @NotBlank
     private String visao;
 
-    @ManyToMany(
-            cascade = CascadeType.ALL,
-            fetch = FetchType.LAZY
-    )
+    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinTable(
             name = "documento_link",
             joinColumns = @JoinColumn(name = "documento_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "link_id", referencedColumnName = "id"))
     private Set<Link> links;
 
-    public Documento() {
-        links = new HashSet();
-    }
+    private double frequenciaMaxima;
 
-    public Documento(String url, String texto, String visao) {
-        this.url = url;
-        this.texto = texto;
-        this.visao = visao;
-        this.links = new HashSet();
-    }
+    private double somaQuadradosPesos;
 
-    public Long getId() {
-        return id;
-    }
+    @OneToMany(mappedBy = "documento", // Nome do atributo na classe IndiceInvertido.
+            cascade = CascadeType.ALL,
+            fetch = FetchType.LAZY,
+            orphanRemoval = true)
+    private List<IndiceInvertido> indiceInvertido;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
-    public void setUrl(String url) {
-        this.url = url;
-    }
-
-    public String getTexto() {
-        return texto;
-    }
-
-    public void setTexto(String texto) {
-        this.texto = texto;
-    }
-
-    public String getVisao() {
-        return visao;
-    }
-
-    public void setVisao(String visao) {
-        this.visao = visao;
-    }
-
-    public Set<Link> getLinks() {
-        return links;
-    }
-
-    public void setLinks(Set<Link> links) {
-        this.links = links;
-    }
-
-    public void addLink(Link link) {
+     public void addLink(Link link) {
         this.links.add(link);
     }
 
@@ -120,32 +82,7 @@ public class Documento implements Serializable {
         links.remove(link);
     }
 
-    @Override
-    public int hashCode() {
-        int hash = 5;
-        hash = 59 * hash + Objects.hashCode(this.id);
-        hash = 59 * hash + Objects.hashCode(this.url);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final Documento other = (Documento) obj;
-        if (!Objects.equals(this.url, other.url)) {
-            return false;
-        }
-        if (!Objects.equals(this.id, other.id)) {
-            return false;
-        }
-        return true;
+    public void adicionarPeso(double peso) {
+        somaQuadradosPesos += Math.sqrt(peso);
     }
 }

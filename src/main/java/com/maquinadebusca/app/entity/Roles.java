@@ -10,7 +10,6 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.OneToOne;
 import javax.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -19,27 +18,20 @@ import lombok.Data;
  *
  * @author vinicius
  */
-@Entity
+@Entity(name = "roles")
 @Data
 @AllArgsConstructor
-public class Usuario {
+public class Roles {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     @NotBlank
     @Column(unique = true)
-    private String user;
+    private String username;
 
     @NotBlank
-    private String password;
-
-    private Boolean isAdministrator;
-    
-    @OneToOne
-    private Roles role;
-
-    private Boolean isLogged;
+    private String role;
 
 }

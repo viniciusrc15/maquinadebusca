@@ -310,8 +310,8 @@ public class ColetorService {
             pageable = (Pageable) pagina.nextPageable();
         }
         return "{\"resposta\": \"Ok\"}";
-    }
-
+    }  
+    
     public List<Link> pesquisarLinkPorIntervaloDeIdentificacao(Long id1, Long id2, String host) {
         return linkRepository.findLinkByIdRange(id1, id2, host);
     }

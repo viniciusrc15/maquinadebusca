@@ -14,18 +14,21 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
 /**
  *
  * @author vinicius
  */
 @Entity
+@Data
+@AllArgsConstructor
 @JsonIdentityInfo(
         generator = ObjectIdGenerators.PropertyGenerator.class,
         property = "id"
 )
 public class Host {
-
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -34,36 +37,11 @@ public class Host {
     @Column(unique = true)
     private String hostName;
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getHostName() {
-        return hostName;
-    }
-
-    public void setHostName(String hostName) {
-        this.hostName = hostName;
-    }
-
-    public LocalDateTime getUltimaColeta() {
-        return ultimaColeta;
-    }
-
-    public void setUltimaColeta(LocalDateTime ultimaColeta) {
-        this.ultimaColeta = ultimaColeta;
-    }
-
+    private LocalDateTime ultimaColeta;
+    
     public Host(String hostName, LocalDateTime ultimaColeta) {
         this.hostName = hostName;
         this.ultimaColeta = ultimaColeta;
     }
-
-    private LocalDateTime ultimaColeta;
-
     
 }

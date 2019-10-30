@@ -5,8 +5,6 @@
  */
 package com.maquinadebusca.app.model;
 
-import java.net.URL;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,9 +16,19 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class DocumentoModel {
-    private URL url;
+public class TermoConsulta {
+
     private String texto;
-    private String visao;
-    private List<String> urls; 
+    private int frequencia;
+    private double tf;
+    private double idf;
+    private double peso;
+
+    public TermoConsulta(String texto, int frequencia, double idf) {
+        this.texto = texto;
+        this.frequencia = frequencia;
+        this.tf = 1 + Math.log(this.frequencia) / Math.log(2);
+        this.idf = idf;
+        this.peso = this.tf * this.idf;
+    }
 }
