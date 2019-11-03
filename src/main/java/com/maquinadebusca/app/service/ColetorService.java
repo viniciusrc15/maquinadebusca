@@ -140,12 +140,10 @@ public class ColetorService {
         String builder = new String();
         String[] allWords = texto.toLowerCase().split(" ");
         for (String word : allWords) {
-            //for (String stopword : stopwords) {
             if (!stopwords.toString().contains(word)) {
                 builder = builder.concat(word);
                 builder = builder.concat(" ");
             }
-            //}
         }
         return builder;
     }
@@ -191,29 +189,6 @@ public class ColetorService {
         }).start();
     }
 
-    public List<Link> getLink() {
-        Iterable<Link> links = linkRepository.findAll();
-        List<Link> resposta = new LinkedList();
-        for (Link link : links) {
-            resposta.add(link);
-        }
-        return resposta;
-    }
-
-    public HostModel getHost(Long id) {
-        Optional<Host> host = hostReprository.findById(id);
-        if (host.isPresent()) {
-            List<Link> findByHost = linkRepository.findByHost(host.get());
-            return new HostModel(host.get().getId(), host.get().getHostName(), host.get().getUltimaColeta(), Long.valueOf(findByHost.size()));
-        }
-        return null;
-    }
-
-    public Optional<Link> getLink(long id) {
-        Optional<Link> link = linkRepository.findById(id);
-        return link;
-    }
-
     private void saveLinks(Documento documento) throws MalformedURLException {
         for (Link link1 : documento.getLinks()) {
             URL url = new URL(link1.getUrl());
@@ -247,84 +222,8 @@ public class ColetorService {
         }
     }
 
-    public List<HostModel> getAlltHost() {
-        List<Host> hosts = hostReprository.findAll();
-        List<HostModel> hostModels = new ArrayList<>();
-        for (Host host : hosts) {
-            List<Link> findByHost = linkRepository.findByHost(host);
-            hostModels.add(new HostModel(host.getId(), findByHost));
-        }
-        return hostModels;
+    public Documento save(Documento documento) {
+        return documentRepository.save(documento);
     }
 
-    public List<HostModel> getAlltHostAll() {
-        List<Host> hosts = hostReprository.findAll();
-        List<HostModel> hostModels = new ArrayList<>();
-        for (Host host : hosts) {
-            List<Link> findByHost = linkRepository.findByHost(host);
-            hostModels.add(new HostModel(host.getId(), host.getHostName(), host.getUltimaColeta(), Long.valueOf(findByHost.size()), findByHost));
-        }
-        return hostModels;
-    }
-
-    public HostModel getHostLinks(long id) {
-        Optional<Host> host = hostReprository.findById(id);
-        if (host.isPresent()) {
-            List<Link> findByHost = linkRepository.findByHost(host.get());
-            return new HostModel(host.get().getId(), findByHost);
-        }
-        return null;
-    }
-
-    public List<Link> salvarLink(List<Link> links) {
-        return linkRepository.saveAll(links);
-    }
-
-    public Link atualizarLink(Link link) {
-        return linkRepository.save(link);
-    }
-
-    public List<Link> encontrarLinkUrl(String url) {
-        return linkRepository.findByUrlIgnoreCaseContaining(url);
-    }
-
-    public List<Link> listarEmOrdemAlfabetica() {
-        return linkRepository.getInLexicalOrder();
-    }
-
-    public String buscarPagina(Integer size, Integer page, String url) {
-        Slice<Link> pagina = null;
-        Pageable pageable = (Pageable) PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, url));
-        while (true) {
-            pagina = linkRepository.getPage(pageable);
-            int numeroDaPagina = pagina.getNumber();
-            int numeroDeElementosNaPagina = pagina.getNumberOfElements();
-            int tamanhoDaPagina = pagina.getSize();
-            System.out.println("\n\nPágina: " + numeroDaPagina + " Número de Elementos: "
-                    + numeroDeElementosNaPagina + " Tamaho da Página: " + tamanhoDaPagina);
-            List<Link> links = pagina.getContent();
-            links.forEach(System.out::println);
-            if (!pagina.hasNext()) {
-                break;
-            }
-            pageable = (Pageable) pagina.nextPageable();
-        }
-        return "{\"resposta\": \"Ok\"}";
-    }  
-    
-    public List<Link> pesquisarLinkPorIntervaloDeIdentificacao(Long id1, Long id2, String host) {
-        return linkRepository.findLinkByIdRange(id1, id2, host);
-    }
-
-    public Long contarLinkPorIntervaloDeIdentificacao(Long id1, Long id2) {
-        return linkRepository.countLinkByIdRange(id1, id2);
-    }
-
-    public Link contarLinkPorIntervaloDeData(LocalDateTime dateStart, LocalDateTime dateEnd) {
-        return linkRepository.contarLinkPorIntervaloDeData(dateStart, dateEnd);
-    }
-
-    public int atualizarDataUltimaColeta(String host, LocalDateTime dataUltimaColeta) {
-        return linkRepository.updateLastCrawlingDate(dataUltimaColeta, host);
-    }
 }

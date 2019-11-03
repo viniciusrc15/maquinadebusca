@@ -10,6 +10,7 @@ import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.maquinadebusca.app.entity.Link;
 import com.maquinadebusca.app.model.Mensagem;
 import com.maquinadebusca.app.service.ColetorService;
+import com.maquinadebusca.app.service.LinkService;
 import java.time.LocalDateTime;
 import java.util.List;
 import javax.validation.Valid;
@@ -37,19 +38,19 @@ import org.springframework.web.bind.annotation.RestController;
 public class LinkController {
     
      @Autowired
-    private ColetorService cs;
+    private LinkService linkService;
     
     // URL: http://localhost:8080/coletor/link
     @GetMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity listarLink() {
-        return ResponseEntity.ok(cs.getLink());
+        return ResponseEntity.ok(linkService.getLink());
     }
     // Request for: http://localhost:8080/coletor/link/{id}
 
     @GetMapping(value = "/{id}", produces
             = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity listarLink(@PathVariable(value = "id") long id) {
-        return ResponseEntity.ok(cs.getLink(id));
+        return ResponseEntity.ok(linkService.getLink(id));
     }
 
     
@@ -62,7 +63,7 @@ public class LinkController {
         if (resultado.hasErrors()) {
             return ResponseEntity.badRequest().body(new Mensagem("erro", "os dados sobre o link não foram informados corretamente "));
         } else {
-            links = cs.salvarLink(links);
+            links = linkService.salvarLink(links);
             if ((links != null) && (!links.isEmpty())) {
                 return ResponseEntity.ok(links);
             } else {
@@ -78,7 +79,7 @@ public class LinkController {
         if (resultado.hasErrors()) {
             return ResponseEntity.badRequest().body(new Mensagem("erro", "Os dados sobre o link não foram informados corretamente"));
         } else {
-            link = cs.atualizarLink(link);
+            link = linkService.atualizarLink(link);
             if ((link != null) && (link.getId() > 0)) {
                 return ResponseEntity.ok(link);
             } else {
@@ -91,41 +92,41 @@ public class LinkController {
     @GetMapping(value = "/encontrar/{url}", produces
             = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity encontrarLink(@PathVariable(value = "url") String url) {
-        return ResponseEntity.ok(cs.encontrarLinkUrl(url));
+        return ResponseEntity.ok(linkService.encontrarLinkUrl(url));
     }
 
     // Request for: http://localhost:8080/coletor/link/ordemAlfabetica
     @GetMapping(value = "/ordemAlfabetica", produces
             = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity listarEmOrdemAlfabetica() {
-        return ResponseEntity.ok(cs.listarEmOrdemAlfabetica());
+        return ResponseEntity.ok(linkService.listarEmOrdemAlfabetica());
     }
 
     // Request for: http://localhost:8080/coletor/link/pagina
     @GetMapping(value = "/pagina",
             produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity listarPagina(@RequestParam("size") Integer size, @RequestParam("page") Integer page, @RequestParam("url") String url) {
-        return ResponseEntity.ok(cs.buscarPagina(size, page, url));
+        return ResponseEntity.ok(linkService.buscarPagina(size, page, url));
     }
 
     // Request for: http://localhost:8080/coletor/link/intervalo/{id1}/{id2}
     @GetMapping(value = "/intervalo/{id1}/{id2}", produces
             = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity encontrarLinkPorIntervaloDeId(@PathVariable(value = "id1") Long id1, @PathVariable(value = "id2") Long id2, @RequestParam("host") String host) {
-        return ResponseEntity.ok(cs.pesquisarLinkPorIntervaloDeIdentificacao(id1, id2, host));
+        return ResponseEntity.ok(linkService.pesquisarLinkPorIntervaloDeIdentificacao(id1, id2, host));
     }
     // Request for: http://localhost:8080/coletor/link/intervalo/contar/{id1}/{id2}
 
     @GetMapping(value = "/intervalo/contar/{id1}/{id2}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity contarLinkPorIntervaloDeId(@PathVariable(value = "id1") Long id1, @PathVariable(value = "id2") Long id2) {
-        return ResponseEntity.ok(cs.contarLinkPorIntervaloDeIdentificacao(id1, id2));
+        return ResponseEntity.ok(linkService.contarLinkPorIntervaloDeIdentificacao(id1, id2));
     }
 
     @GetMapping(value = "/intervalo/data/{id1}/{id2}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity contarLinkPorIntervaloDeId(
             @PathVariable(value = "dateStart") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateStart, 
             @PathVariable(value = "dateEnd") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateEnd) {
-        return ResponseEntity.ok(cs.contarLinkPorIntervaloDeData(dateStart, dateEnd));
+        return ResponseEntity.ok(linkService.contarLinkPorIntervaloDeData(dateStart, dateEnd));
     }
 
 // Request for: http://localhost:8080/coletor/link/ultima/coleta/{host}/{data}
@@ -133,7 +134,7 @@ public class LinkController {
             = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity atualizarUltimaColeta(@PathVariable(value = "host") String host,
             @PathVariable(value = "data") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime data) {
-        int n = cs.atualizarDataUltimaColeta(host, data);
+        int n = linkService.atualizarDataUltimaColeta(host, data);
         return ResponseEntity.ok("sucesso número de registros atualizados  : " + n);
     }
 }

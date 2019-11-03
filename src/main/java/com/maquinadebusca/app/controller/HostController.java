@@ -7,6 +7,7 @@ package com.maquinadebusca.app.controller;
 
 import com.maquinadebusca.app.model.HostModel;
 import com.maquinadebusca.app.service.ColetorService;
+import com.maquinadebusca.app.service.HostService;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -25,12 +26,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class HostController {
     
      @Autowired
-    private ColetorService cs;
+    private HostService hostService;
     
     @GetMapping(value = "/{id}", produces
             = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<HostModel> listarHost(@PathVariable(value = "id") long id) {
-        HostModel host = cs.getHost(id);
+        HostModel host = hostService.getHost(id);
         if (host != null) {
             return ResponseEntity.ok(host);
         }
@@ -40,7 +41,7 @@ public class HostController {
 
     @GetMapping(value = "/{id}/links", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<HostModel> listarHostWithLinks(@PathVariable(value = "id") long id) {
-        HostModel host = cs.getHostLinks(id);
+        HostModel host = hostService.getHostLinks(id);
         if (host != null) {
             return ResponseEntity.ok(host);
         }
@@ -51,7 +52,7 @@ public class HostController {
     @GetMapping(value = "/host/{id}", produces
             = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<List<HostModel>> listarHosts(@PathVariable(value = "id") long id) {
-        List<HostModel> hosts = cs.getAlltHost();
+        List<HostModel> hosts = hostService.getAlltHost();
         return ResponseEntity.ok(hosts);
     }
     
