@@ -33,9 +33,6 @@ public class IndexadorService {
 
     List<Documento> documentos;
 
-    public IndexadorService() {
-        this.hashTermos = new Hashtable<>();
-    }
 
     @Transactional
     public boolean limpaCriaIndice() {

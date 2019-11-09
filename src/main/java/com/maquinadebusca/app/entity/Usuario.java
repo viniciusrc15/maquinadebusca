@@ -36,9 +36,6 @@ public class Usuario {
     private String password;
 
     private Boolean isAdministrator;
-    
-    @OneToOne
-    private Roles role;
 
     private Boolean isLogged;
 

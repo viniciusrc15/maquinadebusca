@@ -5,19 +5,21 @@
  */
 package com.maquinadebusca.app.entity;
 
+import java.io.Serializable;
+import java.util.Objects;
 import javax.persistence.Embeddable;
-import lombok.AllArgsConstructor;
-import lombok.Data;
 
 /**
  *
  * @author vinicius
  */
-@Embeddable
-@Data
-@AllArgsConstructor
-public class IdIndiceInvertido {
 
-    private Long idTermo;
-    private Long idDocumento;
+@Embeddable
+public class IdIndiceInvertido implements Serializable {
+
+	private static final long serialVersionUID = 4778887795838393082L;
+	private Long idTermo;
+	private Long idDocumento;
+
+
 }

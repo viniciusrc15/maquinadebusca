@@ -1,12 +1,7 @@
 package com.maquinadebusca.app.controller;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.maquinadebusca.app.entity.Documento;
-import com.maquinadebusca.app.entity.Link;
 import com.maquinadebusca.app.service.ColetorService;
-import com.maquinadebusca.app.model.HostModel;
-import com.maquinadebusca.app.model.Mensagem;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -14,17 +9,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.maquinadebusca.app.service.ColetorServiceTest;
-import java.time.LocalDateTime;
 //import com.maquinadebusca.app.model.ColetorServiceTest;
 import java.util.List;
-import javax.validation.Valid;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpStatus;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 /*
@@ -41,34 +29,31 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class ColetorController {
 
     @Autowired
-    private ColetorServiceTest coletorSevice;
+    private ColetorServiceTest coletorSeviceTest;
 
     @Autowired
-    private ColetorService cs;
+    private ColetorService coletorSevice;
 
     @GetMapping(value = "/listar", produces = MediaType.TEXT_PLAIN_VALUE)
     public ResponseEntity<String> starter() {
-        com.maquinadebusca.app.model.DocumentoModel dataColletor = coletorSevice.getDataColletor();
+        com.maquinadebusca.app.model.DocumentoModel dataColletor = coletorSeviceTest.getDataColletor();
         return ResponseEntity.ok(dataColletor.getVisao());
     }
 
-    // URL: http://localhost:8080/coletor
     @PostMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<List<Documento>> iniciar(@RequestParam("urls") List<String> links) {
-        List<Documento> documentos = cs.executar(links);
+        List<Documento> documentos = coletorSevice.executar(links);
         return ResponseEntity.ok(documentos);
     }
-    // URL: http://localhost:8080/coletor
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<List<Documento>> listar() {
-        return ResponseEntity.ok(cs.getDocumentos());
+        return ResponseEntity.ok(coletorSevice.getDocumentos());
     }
-    // Request for: http://localhost:8080/coletor/{id}
 
     @GetMapping(value = "/{id}", produces
             = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<Documento> listar(@PathVariable(value = "id") long id) {
-        return ResponseEntity.ok(cs.getDocumento(id));
+    public ResponseEntity<Documento> listar(@PathVariable(value = "id") Long id) {
+        return ResponseEntity.ok(coletorSevice.getDocumento(id));
     }    
 }

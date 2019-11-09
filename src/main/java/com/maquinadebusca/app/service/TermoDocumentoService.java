@@ -8,12 +8,14 @@ package com.maquinadebusca.app.service;
 import com.maquinadebusca.app.entity.TermoDocumento;
 import com.maquinadebusca.app.repository.TermoDocumentoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  *
  * @author vinicius
  */
-class TermoDocumentoService {
+@Service
+public class TermoDocumentoService {
 
     @Autowired
     TermoDocumentoRepository termoDocumentoRepository;

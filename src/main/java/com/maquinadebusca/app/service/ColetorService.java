@@ -8,11 +8,9 @@ package com.maquinadebusca.app.service;
 import com.maquinadebusca.app.entity.Documento;
 import com.maquinadebusca.app.entity.Host;
 import com.maquinadebusca.app.entity.Link;
-import com.maquinadebusca.app.model.HostModel;
 import com.maquinadebusca.app.repository.DocumentoRepository;
 import com.maquinadebusca.app.repository.HostReprository;
 import com.maquinadebusca.app.repository.LinkRepository;
-import java.awt.print.Pageable;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -23,16 +21,12 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 /**
